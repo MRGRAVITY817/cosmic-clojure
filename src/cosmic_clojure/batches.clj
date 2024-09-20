@@ -24,3 +24,11 @@
   [batch line]
   (-> batch
       (update :Batch/quantity - (:OrderLine/quantity line))))
+
+(defn can-allocate
+  "Check if a batch can be allocated to an order line."
+  [batch line]
+  (let [available (available-quantity batch)]
+    (and (>= available (:OrderLine/quantity line))
+         (not= 0 available)
+         (= (:Batch/sku batch) (:OrderLine/sku line)))))
