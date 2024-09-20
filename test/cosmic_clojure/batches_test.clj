@@ -83,7 +83,16 @@
           ;; Act
           output (batches/can-allocate batch line)]
       ;; Assert
-      (is (not output)))))
+      (is (not output))))
+  (testing "can only deallocate allocated lines"
+    (let [;; Arrange 
+          [batch line] (->batch-and-line {:sku "DECORATIVE-TRINKET"
+                                          :batch-qty 20
+                                          :line-qty 2})
+          ;; Act
+          output (batches/deallocate-line batch line)]
+      ;; Assert
+      (is (= (batches/available-quantity output) 20)))))
 
 (comment
   (clojure.test/run-tests)
