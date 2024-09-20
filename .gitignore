@@ -1,0 +1,6 @@
+.git/
+
+.clj-kondo/.cache/
+.cpcache/
+.lsp/
+.nrepl-port
