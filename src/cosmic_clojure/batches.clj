@@ -16,15 +16,18 @@
              :OrderLine/sku      sku,
              :OrderLine/quantity quantity}))
 
+(def ^:private LineAllocations
+  [:set {:default #{}}
+   #'OrderLine])
+
 (def Batch
+  "A value object representing a batch."
   [:map
    [:Batch/reference string?]
    [:Batch/sku string?]
    [:Batch/purchased-quantity int?]
    [:Batch/eta [:maybe inst?]]
-   [:Batch/allocations
-    [:set {:default #{}}
-     #'OrderLine]]])
+   [:Batch/allocations LineAllocations]])
 
 (defn ->batch
   "A factory function to create a batch."
@@ -75,11 +78,14 @@
    Returns updated batches.
    "
   [batches line]
-  (let [valid-batches (filter #(can-allocate % line) batches)
-        preferred     (first (sort-by :Batch/eta valid-batches))]
-    {:allocated (allocate-line preferred line),
-     :ignored   (-> (remove #(= % preferred) batches)
-                    (into []))}))
+  (let [valid-batches (filter #(can-allocate % line) batches)]
+    (if (empty? valid-batches)
+      {:allocated nil, :ignored batches, :error "Out of stock"}
+      (let [preferred (first (sort-by :Batch/eta valid-batches))]
+        {:allocated (allocate-line preferred line),
+         :ignored   (-> (remove #(= % preferred) batches)
+                        (into [])),
+         :error     nil}))))
 
 (defn deallocate-line
   "Deallocate an order line from a batch. 

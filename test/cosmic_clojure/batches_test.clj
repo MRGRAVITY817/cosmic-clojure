@@ -13,8 +13,6 @@
 
 (defn- now [] (day-after 0))
 
-(now)
-
 (defn- batch-fixture
   [& {:keys [reference sku quantity eta]}]
   (-> (mg/generate Batch)
@@ -130,7 +128,8 @@
       (is (= output
              {:allocated (-> in-stock-batch
                              (update :Batch/allocations conj line)),
-              :ignored   [shipping-batch]}))))
+              :ignored   [shipping-batch],
+              :error     nil}))))
   (testing "prefers earlier batches"
     (let [;; Arrange
           earliest-batch (batch-fixture {:reference "batch-two",
@@ -158,8 +157,26 @@
       (is (= output
              {:allocated (-> earliest-batch
                              (update :Batch/allocations conj line)),
-              :ignored   [second-earliest-batch third-earliest-batch]})))))
-
+              :ignored   [second-earliest-batch third-earliest-batch],
+              :error     nil}))))
+  (testing "cannot allocate if out of stock"
+    (let [;; Arrange
+          {:keys [allocated]} (batches/allocate-line-to-preferred-batch
+                                [(batch-fixture {:reference "batch-one",
+                                                 :sku       "SMALL-TABLE",
+                                                 :quantity  10,
+                                                 :eta       (now)})]
+                                (batches/->order-line {:order-id "order-ref",
+                                                       :sku      "SMALL-TABLE",
+                                                       :quantity 10}))
+          ;; Act
+          output (batches/allocate-line-to-preferred-batch
+                   [allocated]
+                   (batches/->order-line
+                     {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 1}))]
+      ;; Assert
+      (is (= output
+             {:allocated nil, :ignored [allocated], :error "Out of stock"})))))
 
 (comment
   (clojure.test/run-tests)
