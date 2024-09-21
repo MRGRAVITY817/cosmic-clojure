@@ -5,7 +5,15 @@
 
 ;; Test helpers
 
-(defn- now [] (new java.util.Date))
+(defn- day-after
+  [days]
+  (let [calendar (java.util.Calendar/getInstance)
+        _ (.add calendar java.util.Calendar/DAY_OF_YEAR days)]
+    (.getTime calendar)))
+
+(defn- now [] (day-after 0))
+
+(now)
 
 (defn- batch-fixture
   [& {:keys [reference sku quantity eta]}]
@@ -100,25 +108,58 @@
       ;; Assert
       (is (= (batches/available-quantity output) 18)))))
 
-(deftest allocate-tests
+(deftest allocate-to-preferred-batch-tests
   (testing "prefers current stock batches to shipments"
     (let [;; Arrange
-          sku     "SMALL-TABLE"
-          batches [(batch-fixture {:reference "batch-one",
-                                   :sku       sku,
-                                   :quantity  100,
-                                   :eta       nil})
-                   (batch-fixture {:reference "batch-two",
-                                   :sku       sku,
-                                   :quantity  100,
-                                   :eta       (now)})]
-          line    (batches/->order-line
-                    {:order-id "order-ref", :sku sku, :quantity 10})
+          sku            "SMALL-TABLE"
+          in-stock-batch (batch-fixture {:reference "batch-one",
+                                         :sku       sku,
+                                         :quantity  100,
+                                         :eta       nil})
+          shipping-batch (batch-fixture {:reference "batch-two",
+                                         :sku       sku,
+                                         :quantity  100,
+                                         :eta       (now)})
+          batches        [in-stock-batch shipping-batch]
+          line           (batches/->order-line
+                           {:order-id "order-ref", :sku sku, :quantity 10})
           ;; Act
-          [batch-one batch-two]
-            (batches/allocate-line-to-preferred-batch batches line)]
+          output         (batches/allocate-line-to-preferred-batch batches
+                                                                   line)]
       ;; Assert
-      (is (= (available-batch-quantities [batch-one batch-two]) [90 100])))))
+      (is (= output
+             {:allocated (-> in-stock-batch
+                             (update :Batch/allocations conj line)),
+              :ignored   [shipping-batch]}))))
+  (testing "prefers earlier batches"
+    (let [;; Arrange
+          earliest-batch (batch-fixture {:reference "batch-two",
+                                         :sku       "SMALL-TABLE",
+                                         :quantity  100,
+                                         :eta       (day-after 1)})
+          second-earliest-batch (batch-fixture {:reference "batch-one",
+                                                :sku       "SMALL-TABLE",
+                                                :quantity  100,
+                                                :eta       (day-after 2)})
+          third-earliest-batch (batch-fixture {:reference "batch-three",
+                                               :sku       "SMALL-TABLE",
+                                               :quantity  100,
+                                               :eta       (day-after 3)})
+          batches        [second-earliest-batch
+                          earliest-batch
+                          third-earliest-batch]
+          line           (batches/->order-line {:order-id "order-ref",
+                                                :sku      "SMALL-TABLE",
+                                                :quantity 10})
+          ;; Act
+          output         (batches/allocate-line-to-preferred-batch batches
+                                                                   line)]
+      ;; Assert
+      (is (= output
+             {:allocated (-> earliest-batch
+                             (update :Batch/allocations conj line)),
+              :ignored   [second-earliest-batch third-earliest-batch]})))))
+
 
 (comment
   (clojure.test/run-tests)

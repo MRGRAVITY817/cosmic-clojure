@@ -75,10 +75,11 @@
    Returns updated batches.
    "
   [batches line]
-  (let [batches   (filter #(can-allocate % line) batches)
-        preferred (first (sort-by :Batch/eta batches))]
-    (->> batches
-         (mapv #(if (= % preferred) (allocate-line % line) %)))))
+  (let [valid-batches (filter #(can-allocate % line) batches)
+        preferred     (first (sort-by :Batch/eta valid-batches))]
+    {:allocated (allocate-line preferred line),
+     :ignored   (-> (remove #(= % preferred) batches)
+                    (into []))}))
 
 (defn deallocate-line
   "Deallocate an order line from a batch. 
