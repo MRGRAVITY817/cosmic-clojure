@@ -29,6 +29,11 @@
   [(batch-fixture {:sku sku, :quantity batch-qty})
    (order-line-fixture {:sku sku, :quantity line-qty})])
 
+(defn- available-batch-quantities
+  "Helper function that returns a list of available quantities for batches."
+  [batches]
+  (mapv batches/available-quantity batches))
+
 ;; Tests
 
 (deftest batches-tests
@@ -94,6 +99,26 @@
           output        (batches/allocate-line updated-batch line)]
       ;; Assert
       (is (= (batches/available-quantity output) 18)))))
+
+(deftest allocate-tests
+  (testing "prefers current stock batches to shipments"
+    (let [;; Arrange
+          sku     "SMALL-TABLE"
+          batches [(batch-fixture {:reference "batch-one",
+                                   :sku       sku,
+                                   :quantity  100,
+                                   :eta       nil})
+                   (batch-fixture {:reference "batch-two",
+                                   :sku       sku,
+                                   :quantity  100,
+                                   :eta       (now)})]
+          line    (batches/->order-line
+                    {:order-id "order-ref", :sku sku, :quantity 10})
+          ;; Act
+          [batch-one batch-two]
+            (batches/allocate-line-to-preferred-batch batches line)]
+      ;; Assert
+      (is (= (available-batch-quantities [batch-one batch-two]) [90 100])))))
 
 (comment
   (clojure.test/run-tests)

@@ -51,7 +51,6 @@
 (defn can-allocate
   "Check if a batch can be allocated to an order line."
   [batch line]
-  (prn {:batch batch, :line line})
   (let [available (available-quantity batch)]
     (and (>= available (:OrderLine/quantity line))
          (not= 0 available)
@@ -66,6 +65,20 @@
     (-> batch
         (update :Batch/allocations conj line))
     batch))
+
+(defn allocate-line-to-preferred-batch
+  "Allocate an order line to one of the supplied batches.
+   Batches that matches following conditions will be preferred:
+   - batch which is in stock (over shipped)
+   - batch with earliest eta
+
+   Returns updated batches.
+   "
+  [batches line]
+  (let [batches   (filter #(can-allocate % line) batches)
+        preferred (first (sort-by :Batch/eta batches))]
+    (->> batches
+         (mapv #(if (= % preferred) (allocate-line % line) %)))))
 
 (defn deallocate-line
   "Deallocate an order line from a batch. 
