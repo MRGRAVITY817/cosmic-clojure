@@ -1,8 +1,7 @@
 (ns cosmic-clojure.batches-test
-  (:require
-   [clojure.test :refer [deftest is testing]]
-   [cosmic-clojure.batches :as batches :refer [Batch OrderLine]]
-   [malli.generator :as mg]))
+  (:require [clojure.test :refer [deftest is testing]]
+            [cosmic-clojure.batches :as batches :refer [Batch OrderLine]]
+            [malli.generator :as mg]))
 
 ;; Test helpers
 
@@ -26,73 +25,74 @@
 (defn- ->batch-and-line
   "Test helper function that creates a batch and order line from given input."
   [{:keys [sku batch-qty line-qty]}]
-  [(batch-fixture {:sku      sku
-                   :quantity batch-qty})
-   (order-line-fixture {:sku      sku
-                        :quantity line-qty})])
+  [(batch-fixture {:sku sku, :quantity batch-qty})
+   (order-line-fixture {:sku sku, :quantity line-qty})])
 
 ;; Tests
 
 (deftest batches-tests
   (testing "allocating to a batch reduces the available quantity"
-    (let [;; Arrange 
-          batch (batches/->batch {:reference "batch-001"
-                                  :sku "SMALL-TABLE"
-                                  :quantity 20
-                                  :eta (now)})
-          line  (batches/->order-line {:order-id "order-ref"
-                                       :sku "SMALL-TABLE"
-                                       :quantity 2})
-         ;; Act
+    (let [;; Arrange
+          batch  (batches/->batch {:reference "batch-001",
+                                   :sku       "SMALL-TABLE",
+                                   :quantity  20,
+                                   :eta       (now)})
+          line   (batches/->order-line
+                   {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 2})
+          ;; Act
           output (batches/allocate-line batch line)]
-     ;; Assert
+      ;; Assert
       (is (= (batches/available-quantity output) 18))))
   (testing "can allocate if available greater than required"
     (let [;; Arrange
-          [large-batch small-line] (->batch-and-line {:sku "ELEGANT-LAMP"
-                                                      :batch-qty 20
-                                                      :line-qty 2})
+          [large-batch small-line]
+            (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
           ;; Act
           output (batches/can-allocate large-batch small-line)]
       ;; Assert
       (is output)))
   (testing "cannot allocate if available smaller than required"
     (let [;; Arrange
-          [small-batch large-line] (->batch-and-line {:sku "ELEGANT-LAMP"
-                                                      :batch-qty 2
-                                                      :line-qty 20})
+          [small-batch large-line]
+            (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 2, :line-qty 20})
           ;; Act
           output (batches/can-allocate small-batch large-line)]
       ;; Assert
       (is (not output))))
   (testing "can allocate if available equal to required"
     (let [;; Arrange
-          [batch line] (->batch-and-line {:sku "ELEGANT-LAMP"
-                                          :batch-qty 20
-                                          :line-qty 2})
+          [batch line] (->batch-and-line
+                         {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
           ;; Act
-          output (batches/can-allocate batch line)]
+          output       (batches/can-allocate batch line)]
       ;; Assert
       (is output)))
   (testing "cannot allocate if skus do not match"
     (let [;; Arrange
-          batch (batch-fixture {:sku "SMALL-TABLE"
-                                :quantity 20})
-          line (order-line-fixture {:sku "LARGE-TABLE"
-                                    :quantity 2})
+          batch  (batch-fixture {:sku "SMALL-TABLE", :quantity 20})
+          line   (order-line-fixture {:sku "LARGE-TABLE", :quantity 2})
           ;; Act
           output (batches/can-allocate batch line)]
       ;; Assert
       (is (not output))))
   (testing "can only deallocate allocated lines"
-    (let [;; Arrange 
-          [batch line] (->batch-and-line {:sku "DECORATIVE-TRINKET"
-                                          :batch-qty 20
-                                          :line-qty 2})
+    (let [;; Arrange
+          [batch line] (->batch-and-line {:sku       "DECORATIVE-TRINKET",
+                                          :batch-qty 20,
+                                          :line-qty  2})
           ;; Act
-          output (batches/deallocate-line batch line)]
+          output       (batches/deallocate-line batch line)]
       ;; Assert
-      (is (= (batches/available-quantity output) 20)))))
+      (is (= (batches/available-quantity output) 20))))
+  (testing "allocation is idempotent"
+    (let [;; Arrange
+          [batch line]  (->batch-and-line
+                          {:sku "ANGULAR-DESK", :batch-qty 20, :line-qty 2})
+          updated-batch (batches/allocate-line batch line)
+          ;; Act
+          output        (batches/allocate-line updated-batch line)]
+      ;; Assert
+      (is (= (batches/available-quantity output) 18)))))
 
 (comment
   (clojure.test/run-tests)

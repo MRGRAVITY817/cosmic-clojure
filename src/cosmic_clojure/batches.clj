@@ -12,8 +12,8 @@
   "A factory function to create an order line."
   [{:keys [order-id sku quantity]}]
   (m/coerce OrderLine
-            {:OrderLine/order-id order-id
-             :OrderLine/sku sku
+            {:OrderLine/order-id order-id,
+             :OrderLine/sku      sku,
              :OrderLine/quantity quantity}))
 
 (def Batch
@@ -22,16 +22,18 @@
    [:Batch/sku string?]
    [:Batch/quantity int?]
    [:Batch/eta [:maybe inst?]]
-   [:Batch/allocations [:set {:default #{}} #'OrderLine]]])
+   [:Batch/allocations
+    [:set {:default #{}}
+     #'OrderLine]]])
 
 (defn ->batch
   "A factory function to create a batch."
   [{:keys [reference sku quantity eta]}]
   (m/coerce Batch
-            {:Batch/reference reference
-             :Batch/sku sku
-             :Batch/quantity quantity
-             :Batch/eta eta
+            {:Batch/reference   reference,
+             :Batch/sku         sku,
+             :Batch/quantity    quantity,
+             :Batch/eta         eta,
              :Batch/allocations #{}}))
 
 (defn available-quantity
@@ -40,12 +42,14 @@
   (:Batch/quantity batch))
 
 (defn allocate-line
-  "Allocate an order line to a batch. Returns a batch with an updated
-  quantity."
+  "Allocate an order line to a batch. Returns a batch with an updated quantity. 
+   If the line has already been allocated to this batch, it will be ignored."
   [batch line]
-  (prn "Allocating line: " line " to batch: " batch)
-  (-> batch
-      (update :Batch/quantity - (:OrderLine/quantity line))))
+  (if (contains? (:Batch/allocations batch) line)
+    batch
+    (-> batch
+        (update :Batch/allocations conj line)
+        (update :Batch/quantity - (:OrderLine/quantity line)))))
 
 (defn can-allocate
   "Check if a batch can be allocated to an order line."
@@ -59,7 +63,7 @@
   "Deallocate an order line from a batch. 
    Returns a batch with an updated quantity."
   [batch line]
-  (let [allocations (:Batch/allocations batch)
+  (let [allocations  (:Batch/allocations batch)
         line-exists? (contains? allocations line)]
     (if line-exists?
       (-> batch
