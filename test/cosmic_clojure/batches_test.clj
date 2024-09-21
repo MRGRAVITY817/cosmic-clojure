@@ -12,8 +12,9 @@
   (-> (mg/generate Batch)
       (update :Batch/reference #(or reference %))
       (update :Batch/sku #(or sku %))
-      (update :Batch/quantity #(or quantity %))
-      (update :Batch/eta #(or eta %))))
+      (update :Batch/purchased-quantity #(or quantity %))
+      (update :Batch/eta #(or eta %))
+      (assoc :Batch/allocations #{})))
 
 (defn- order-line-fixture
   [& {:keys [order-id sku quantity]}]
