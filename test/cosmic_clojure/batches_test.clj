@@ -1,46 +1,10 @@
 (ns cosmic-clojure.batches-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [cosmic-clojure.batches :as batches :refer [Batch OrderLine]]
-            [malli.generator :as mg]))
-
-;; Test helpers
-
-(defn- day-after
-  [days]
-  (let [calendar (java.util.Calendar/getInstance)
-        _ (.add calendar java.util.Calendar/DAY_OF_YEAR days)]
-    (.getTime calendar)))
-
-(defn- now [] (day-after 0))
-
-(defn- batch-fixture
-  [& {:keys [reference sku quantity eta]}]
-  (-> (mg/generate Batch)
-      (update :Batch/reference #(or reference %))
-      (update :Batch/sku #(or sku %))
-      (update :Batch/purchased-quantity #(or quantity %))
-      (update :Batch/eta #(or eta %))
-      (assoc :Batch/allocations #{})))
-
-(defn- order-line-fixture
-  [& {:keys [order-id sku quantity]}]
-  (-> (mg/generate OrderLine)
-      (update :OrderLine/order-id #(or order-id %))
-      (update :OrderLine/sku #(or sku %))
-      (update :OrderLine/quantity #(or quantity %))))
-
-(defn- ->batch-and-line
-  "Test helper function that creates a batch and order line from given input."
-  [{:keys [sku batch-qty line-qty]}]
-  [(batch-fixture {:sku sku, :quantity batch-qty})
-   (order-line-fixture {:sku sku, :quantity line-qty})])
-
-(defn- available-batch-quantities
-  "Helper function that returns a list of available quantities for batches."
-  [batches]
-  (mapv batches/available-quantity batches))
-
-;; Tests
+  (:require
+    [clojure.test :refer [deftest is testing]]
+    [cosmic-clojure.batches :as batches]
+    [cosmic-clojure.fixtures.batch-fixtures
+     :refer
+     [->batch-and-line batch-fixture day-after now order-line-fixture]]))
 
 (deftest batches-tests
   (testing "allocating to a batch reduces the available quantity"
