@@ -1,8 +1,8 @@
-(ns cosmic-clojure.batches-test
+(ns cosmic-clojure.batch.batches-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cosmic-clojure.batches :as batches]
-    [cosmic-clojure.fixtures.batch-fixtures
+    [cosmic-clojure.batch.batches :as batches]
+    [cosmic-clojure.batch.fixtures
      :refer
      [->batch-and-line batch-fixture day-after now order-line-fixture]]))
 

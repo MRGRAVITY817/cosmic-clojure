@@ -1,4 +1,4 @@
-(ns cosmic-clojure.batches
+(ns cosmic-clojure.batch.batches
   (:require [malli.core :as m]))
 
 (def OrderLine

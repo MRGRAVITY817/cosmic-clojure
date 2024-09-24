@@ -1,5 +1,5 @@
-(ns cosmic-clojure.fixtures.batch-fixtures
-  (:require [cosmic-clojure.batches :refer [Batch OrderLine]]
+(ns cosmic-clojure.batch.fixtures
+  (:require [cosmic-clojure.batch.batches :refer [Batch OrderLine]]
             [malli.generator :as mg]))
 
 (defn day-after

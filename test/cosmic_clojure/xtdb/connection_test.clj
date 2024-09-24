@@ -1,7 +1,7 @@
-(ns cosmic-clojure.db-test
+(ns cosmic-clojure.xtdb.connection-test
   (:require [clojure.test :refer [deftest is testing]]
-            [cosmic-clojure.db :refer [db-node]]
-            [cosmic-clojure.fixtures.batch-fixtures :refer [order-line-fixture]]
+            [cosmic-clojure.batch.fixtures :refer [order-line-fixture]]
+            [cosmic-clojure.xtdb.connection :refer [db-node]]
             [xtdb.api :as xt]))
 
 (defn- order-line->db-model
