@@ -13,7 +13,8 @@
         output (sut/batch->db-model batch)]
     ;; Assert
     (is (= output
-           {:batch/reference   "batch-001",
+           {:xt/id             "batch-001",
+            :batch/reference   "batch-001",
             :batch/sku         "SMALL-TABLE",
             :batch/purchased-quantity 10,
             :batch/eta         nil,

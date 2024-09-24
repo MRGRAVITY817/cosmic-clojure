@@ -4,7 +4,8 @@
 
 (defn batch->db-model
   [batch]
-  {:batch/reference   (:Batch/reference batch),
+  {:xt/id             (:Batch/reference batch),
+   :batch/reference   (:Batch/reference batch),
    :batch/sku         (:Batch/sku batch),
    :batch/purchased-quantity (:Batch/purchased-quantity batch),
    :batch/eta         (:Batch/eta batch),
@@ -14,7 +15,7 @@
   [db-node batch]
   (xt/submit-tx db-node [[:put-docs :batches (batch->db-model batch)]]))
 
-(defn- get-all-batches [db-node])
+(defn- get-all-batches [db-node] (xt/q db-node '(from :batches [*])))
 
 (defn batch-repo
   [db-node]
