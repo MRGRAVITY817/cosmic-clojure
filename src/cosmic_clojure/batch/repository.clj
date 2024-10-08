@@ -2,5 +2,6 @@
 
 (defprotocol BatchRepository
   (save [_ batch])
-  (get-all [_]))
+  (get-all [_])
+  (get-by-reference [_ reference]))
 

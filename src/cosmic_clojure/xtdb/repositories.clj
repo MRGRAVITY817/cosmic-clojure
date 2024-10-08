@@ -1,7 +1,8 @@
 (ns cosmic-clojure.xtdb.repositories
   (:require [cosmic-clojure.batch.repository :refer [BatchRepository]]
             [cosmic-clojure.xtdb.utils :refer [xt-datetime->inst]]
-            [xtdb.api :as xt]))
+            [xtdb.api :as xt]
+            [clojure.core :as c]))
 
 (defn order-line->db-model [order-line]
   {:xt/id               (:OrderLine/order-id order-line),
@@ -46,9 +47,26 @@
   (->> (xt/q db-node '(from :batches [*]))
        (map db-model->batch)))
 
+(defn- get-batch-by-reference [db-node reference]
+  (->> (xt/q db-node
+             '(-> (from :batches [{:batch/reference $reference} *])
+                  (limit 1))
+             {:args {:reference reference}})
+       (map db-model->batch)
+       (first)))
+
 (defn batch-repo
   [db-node]
   (reify
     BatchRepository
     (save [_ batch] (save-batch db-node batch))
-    (get-all [_] (get-all-batches db-node))))
+    (get-all [_] (get-all-batches db-node))
+    (get-by-reference [_ reference] (get-batch-by-reference db-node reference))))
+
+(defn xtdb-repos
+  "Provides a map of repositories to be used in the application"
+  [db-node]
+  {:batch-repo (batch-repo db-node)})
+
+(comment
+  :rcf)
