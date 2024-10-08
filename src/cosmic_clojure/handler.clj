@@ -12,8 +12,11 @@
                 (fn [req]
                   (handler (assoc req :repos repos)))))})
 
+(def ^:private greeting-message
+  "Hello ^^")
+
 (defn hello-world [_req]
-  (resp/response "Hello Cosmic!!!!!!"))
+  (resp/response greeting-message))
 
 (defn app [repos]
   (ring/ring-handler
