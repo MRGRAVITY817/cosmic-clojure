@@ -1,10 +1,10 @@
 (ns cosmic-clojure.batch.batches-test
   (:require
-    [clojure.test :refer [deftest is testing]]
-    [cosmic-clojure.batch.batches :as batches]
-    [cosmic-clojure.batch.fixtures
-     :refer
-     [->batch-and-line batch-fixture day-after now order-line-fixture]]))
+   [clojure.test :refer [deftest is testing]]
+   [cosmic-clojure.batch.batches :as batches]
+   [cosmic-clojure.batch.fixtures
+    :refer
+    [->batch-and-line batch-fixture day-after now order-line-fixture]]))
 
 (deftest batches-tests
   (testing "allocating to a batch reduces the available quantity"
@@ -14,7 +14,7 @@
                                    :quantity  20,
                                    :eta       (now)})
           line   (batches/->order-line
-                   {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 2})
+                  {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 2})
           ;; Act
           output (batches/allocate-line batch line)]
       ;; Assert
@@ -22,7 +22,7 @@
   (testing "can allocate if available greater than required"
     (let [;; Arrange
           [large-batch small-line]
-            (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
+          (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
           ;; Act
           output (batches/can-allocate large-batch small-line)]
       ;; Assert
@@ -30,7 +30,7 @@
   (testing "cannot allocate if available smaller than required"
     (let [;; Arrange
           [small-batch large-line]
-            (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 2, :line-qty 20})
+          (->batch-and-line {:sku "ELEGANT-LAMP", :batch-qty 2, :line-qty 20})
           ;; Act
           output (batches/can-allocate small-batch large-line)]
       ;; Assert
@@ -38,7 +38,7 @@
   (testing "can allocate if available equal to required"
     (let [;; Arrange
           [batch line] (->batch-and-line
-                         {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
+                        {:sku "ELEGANT-LAMP", :batch-qty 20, :line-qty 2})
           ;; Act
           output       (batches/can-allocate batch line)]
       ;; Assert
@@ -63,7 +63,7 @@
   (testing "allocation is idempotent"
     (let [;; Arrange
           [batch line]  (->batch-and-line
-                          {:sku "ANGULAR-DESK", :batch-qty 20, :line-qty 2})
+                         {:sku "ANGULAR-DESK", :batch-qty 20, :line-qty 2})
           updated-batch (batches/allocate-line batch line)
           ;; Act
           output        (batches/allocate-line updated-batch line)]
@@ -84,7 +84,7 @@
                                          :eta       (now)})
           batches        [in-stock-batch shipping-batch]
           line           (batches/->order-line
-                           {:order-id "order-ref", :sku sku, :quantity 10})
+                          {:order-id "order-ref", :sku sku, :quantity 10})
           ;; Act
           output         (batches/allocate-line-to-preferred-batch batches
                                                                    line)]
@@ -126,18 +126,18 @@
   (testing "cannot allocate if out of stock"
     (let [;; Arrange
           {:keys [allocated]} (batches/allocate-line-to-preferred-batch
-                                [(batch-fixture {:reference "batch-one",
-                                                 :sku       "SMALL-TABLE",
-                                                 :quantity  10,
-                                                 :eta       (now)})]
-                                (batches/->order-line {:order-id "order-ref",
-                                                       :sku      "SMALL-TABLE",
-                                                       :quantity 10}))
+                               [(batch-fixture {:reference "batch-one",
+                                                :sku       "SMALL-TABLE",
+                                                :quantity  10,
+                                                :eta       (now)})]
+                               (batches/->order-line {:order-id "order-ref",
+                                                      :sku      "SMALL-TABLE",
+                                                      :quantity 10}))
           ;; Act
           output (batches/allocate-line-to-preferred-batch
-                   [allocated]
-                   (batches/->order-line
-                     {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 1}))]
+                  [allocated]
+                  (batches/->order-line
+                   {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 1}))]
       ;; Assert
       (is (= output
              {:allocated nil, :ignored [allocated], :error "Out of stock"})))))
