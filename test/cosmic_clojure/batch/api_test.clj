@@ -30,7 +30,6 @@
           input       {:order-line {:order-id "order-1"
                                     :sku      sku
                                     :quantity 1}}
-          output      (-> (-> (mock/request :post "/allocate")
-                              (mock/json-body input))
-                          (api-handler))]
+          output      (api-handler (-> (mock/request :post "/allocate")
+                                       (mock/json-body input)))]
       (is (= output early-batch)))))

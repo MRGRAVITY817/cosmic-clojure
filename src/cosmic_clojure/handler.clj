@@ -2,7 +2,9 @@
   (:require [ring.util.response :as resp]
             [reitit.ring :as ring]
             [reitit.ring.middleware.parameters :as parameters]
-            [ring.middleware.keyword-params :refer [wrap-keyword-params]]))
+            [ring.middleware.json :refer [wrap-json-body]]
+            [ring.middleware.keyword-params :refer [wrap-keyword-params]]
+            [cosmic-clojure.batch.api :as batch-api]))
 
 (def repo-middleware
   "Put implementation of repositories in the request map."
@@ -21,11 +23,13 @@
 (defn app [repos]
   (ring/ring-handler
    (ring/router
-    [["/" {:handler #'hello-world}]]
+    [["/" {:handler #'hello-world}]
+     ["/allocate" {:post {:handler #'batch-api/allocate-handler}}]]
 
     {:data {:repos      repos
             :middleware [parameters/parameters-middleware
                          wrap-keyword-params
+                         #(wrap-json-body % {:keywords? true})
                          repo-middleware]}})
 
    (ring/routes
