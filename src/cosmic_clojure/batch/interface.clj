@@ -5,7 +5,7 @@
 (defn save!
   "Saves a given batch."
   [repo batch]
-  (batch-repo/save repo batch))
+  (batch-repo/save! repo batch))
 
 (defn get-all
   "Returns all saved batches."

@@ -38,7 +38,7 @@
                            (map db-model->order-line)
                            (set))})
 
-(defn- save-batch
+(defn- save-batch!
   [db-node batch]
   (xt/submit-tx db-node [[:put-docs :batches (batch->db-model batch)]]))
 (defn- get-all-batches
@@ -58,7 +58,7 @@
   [db-node]
   (reify
     BatchRepository
-    (save [_ batch] (save-batch db-node batch))
+    (save! [_ batch] (save-batch! db-node batch))
     (get-all [_] (get-all-batches db-node))
     (get-by-reference [_ reference] (get-batch-by-reference db-node reference))))
 

@@ -16,7 +16,7 @@
                                     :sku       "SMALL-TABLE",
                                     :quantity  10,
                                     :eta       eta})
-          _result (batch-repo/save repo batch)
+          _result (batch-repo/save! repo batch)
           ;; Act
           output  (batch-repo/get-all repo)]
       ;; Assert
@@ -38,7 +38,7 @@
                    (batches/->order-line {:order-id "order-002",
                                           :sku      "SMALL-TABLE",
                                           :quantity 1}))
-          _result (batch-repo/save repo batch)
+          _result (batch-repo/save! repo batch)
           ;; Act
           output  (batch-repo/get-all repo)]
       ;; Assert
@@ -62,7 +62,7 @@
                    (batches/->order-line {:order-id "order-003",
                                           :sku      "SMALL-TABLE",
                                           :quantity 1}))
-          _result (batch-repo/save repo batch)
+          _result (batch-repo/save! repo batch)
           ;; Act
           output  (batch-repo/get-by-reference repo "batch-003")]
       ;; Assert

@@ -20,7 +20,7 @@
                                        :sku       sku,
                                        :quantity  10,
                                        :eta       (fixtures/now)})
-          _          (batch-repo/save batch-repo batch-1)
+          _          (batch-repo/save! batch-repo batch-1)
           ;; Act
           output (sut/allocate-order-line-to-batch
                   batch-repo order-line)]
