@@ -80,11 +80,10 @@
   [batches line]
   (let [valid-batches (filter #(can-allocate % line) batches)]
     (if (empty? valid-batches)
-      {:allocated nil, :ignored batches, :error "Out of stock"}
+      {:allocated nil
+       :error     "Out of stock"}
       (let [preferred (first (sort-by :Batch/eta valid-batches))]
         {:allocated (allocate-line preferred line),
-         :ignored   (-> (remove #(= % preferred) batches)
-                        (into [])),
          :error     nil}))))
 
 (defn deallocate-line
@@ -96,3 +95,5 @@
         (update :Batch/allocations disj line))
     batch))
 
+;; Query functions
+(defn reference [batch] (:Batch/reference batch))

@@ -41,7 +41,6 @@
 (defn- save-batch
   [db-node batch]
   (xt/submit-tx db-node [[:put-docs :batches (batch->db-model batch)]]))
-
 (defn- get-all-batches
   [db-node]
   (->> (xt/q db-node '(from :batches [*]))

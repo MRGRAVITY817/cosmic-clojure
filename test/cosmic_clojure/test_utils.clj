@@ -1,8 +1,11 @@
 (ns cosmic-clojure.test-utils
   (:require
    [cosmic-clojure.handler :refer [app]]
-   [cosmic-clojure.xtdb.connection :refer [xtdb-client]]))
+   [cosmic-clojure.xtdb.connection :refer [xtdb-client]]
+   [cosmic-clojure.xtdb.repositories :as xtdb]))
 
-(def api-handler
+(defn api-handler
   "An api handler for testing purposes."
-  (app {:batch-repo (xtdb-client {:type :in-process})}))
+  [& [{:keys [batch-repo]}]]
+  (let [xtdb-client (xtdb-client {:type :in-process})]
+    (app {:batch-repo (or batch-repo (xtdb/batch-repo xtdb-client))})))

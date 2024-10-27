@@ -92,7 +92,6 @@
       (is (= output
              {:allocated (-> in-stock-batch
                              (update :Batch/allocations conj line)),
-              :ignored   [shipping-batch],
               :error     nil}))))
   (testing "prefers earlier batches"
     (let [;; Arrange
@@ -121,7 +120,6 @@
       (is (= output
              {:allocated (-> earliest-batch
                              (update :Batch/allocations conj line)),
-              :ignored   [second-earliest-batch third-earliest-batch],
               :error     nil}))))
   (testing "cannot allocate if out of stock"
     (let [;; Arrange
@@ -140,7 +138,7 @@
                    {:order-id "order-ref", :sku "SMALL-TABLE", :quantity 1}))]
       ;; Assert
       (is (= output
-             {:allocated nil, :ignored [allocated], :error "Out of stock"})))))
+             {:allocated nil, :error "Out of stock"})))))
 
 (comment
   (clojure.test/run-tests)

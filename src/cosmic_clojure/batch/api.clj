@@ -1,10 +1,12 @@
 (ns cosmic-clojure.batch.api
   (:require
-   [cosmic-clojure.batch.batches :as batches]
+   [cosmic-clojure.batch.usecase :as usecase]
    [ring.util.response :as resp]))
 
 (defn allocate-handler
-  "A handler for allocating a batch to an order line."
+  "A handler for allocating an order line to a batch."
   [{:keys [repos body] :as _req}]
-  (let [batch-ref "ref-1"]
-    (resp/response {:batch-ref batch-ref})))
+  (let [batch-repo (:batch-repo repos)
+        order-line (:order-line body)
+        batch-ref  (usecase/allocate-order-line-to-batch batch-repo order-line)]
+    (resp/response batch-ref)))

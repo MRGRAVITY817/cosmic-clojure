@@ -13,23 +13,25 @@
  :aliases {:xtdb {:jvm-opts    ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                                 "-Dio.netty.tryReflectionSetAccessible=true"]}
 
-           :dev  {:extra-paths ["dev"]
+           :dev  {:extra-paths ["dev" "test"]
                   :extra-deps  {integrant/repl {:mvn/version "0.3.3"}}
                   :jvm-opts    ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                                 "-Dio.netty.tryReflectionSetAccessible=true"]}
 
-           :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}
-                               ring/ring-mock      {:mvn/version "0.4.0"}}
-                  :jvm-opts   ["--add-opens=java.base/java.nio=ALL-UNNAMED"
-                               "-Dio.netty.tryReflectionSetAccessible=true"]
-                  :exec-fn    kaocha.runner/exec-fn
-                  :exec-args  {}}
+           :test {:extra-paths ["test"]
+                  :extra-deps  {lambdaisland/kaocha {:mvn/version "1.91.1392"}
+                                ring/ring-mock      {:mvn/version "0.4.0"}}
+                  :jvm-opts    ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+                                "-Dio.netty.tryReflectionSetAccessible=true"]
+                  :exec-fn     kaocha.runner/exec-fn
+                  :exec-args   {}}
 
-           :watch-test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}
-                                     ring/ring-mock      {:mvn/version "0.4.0"}}
-                        :jvm-opts   ["--add-opens=java.base/java.nio=ALL-UNNAMED"
-                                     "-Dio.netty.tryReflectionSetAccessible=true"]
-                        :exec-fn    kaocha.runner/exec-fn
-                        :exec-args  {:watch?     true
-                                     :skip-meta  :slow
-                                     :fail-fast? true}}}}
+           :watch-test {:extra-paths ["test"]
+                        :extra-deps  {lambdaisland/kaocha {:mvn/version "1.91.1392"}
+                                      ring/ring-mock      {:mvn/version "0.4.0"}}
+                        :jvm-opts    ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+                                      "-Dio.netty.tryReflectionSetAccessible=true"]
+                        :exec-fn     kaocha.runner/exec-fn
+                        :exec-args   {:watch?     true
+                                      :skip-meta  :slow
+                                      :fail-fast? true}}}}
